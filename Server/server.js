@@ -2,6 +2,10 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
+// Setup EventEmitter
+const EventEmitter = require("events");
+const myEmitter = new EventEmitter();
+
 // Create the HTTP server
 const server = http.createServer((request, response) => {
   // Grab URL from request
@@ -31,11 +35,13 @@ const server = http.createServer((request, response) => {
           response.writeHead(404, { "Content-Type": "text/plain" });
           response.end("404 Not Found");
           console.log("Page not found");
+          myEmitter.emit('404');
         } else {
           // If file is successfully read, send it as response
           response.writeHead(200, { "Content-Type": "text/html" });
           response.end(data);
           console.log(`${url} page accessed`);
+          myEmitter.emit('200');
         }
       });
       break;
@@ -45,6 +51,7 @@ const server = http.createServer((request, response) => {
       response.writeHead(404, { "Content-Type": "text/plain" });
       response.end("404 Not Found");
       console.log("Page not found");
+      myEmitter.emit('404');
       break;
   }
 });
@@ -53,4 +60,17 @@ const server = http.createServer((request, response) => {
 const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Emitting events for HTTP codes
+myEmitter.on("200", () => {
+  console.log("Response sent: 200 OK");
+});
+
+myEmitter.on("404", () => {
+  console.log("Response sent: 404 Not Found");
+});
+
+myEmitter.on("500", () => {
+  console.log("Response sent: 500 Internal Server Error");
 });
