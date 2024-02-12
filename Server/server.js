@@ -1,43 +1,50 @@
-// Bringing in needed modules for assignment
 const http = require("http");
 const fs = require("fs");
+const path = require("path");
 
 // Create the HTTP server
 const server = http.createServer((request, response) => {
   // Grab URL from request
   const url = request.url;
 
+  // Map file path
+  let filePath;
+
+  // Adjust handling for the root route ("/")
+  if (url === "/") {
+    filePath = path.join(__dirname, "views", "index.html");
+  } else {
+    filePath = path.join(__dirname, "views", url.slice(1) + ".html");
+  }
+
   //Implement routing logic using switch
   switch (url) {
     case "/":
-      // Handle root route
-      response.writeHead(200, { "Content-Type": "text/plain" });
-      response.end("Welcome to homepage");
-      console.log("Homepage accessed");
-      break;
     case "/about":
-      // Handle about route
-      response.writeHead(200, { "Content-Type": "text/plain" });
-      response.end("Welcome to about page");
-      console.log("About page accessed");
-      break;
     case "/contact":
-      // Handle contact route
-      response.writeHead(200, { "Content-Type": "text/plain" });
-      response.end("Welcome to contact page");
-      console.log("Contact page accessed");
-      break;
     case "/products":
-      // Handle products route
-      response.writeHead(200, { "Content-Type": "text/plain" });
-      response.end("Welcome to products page!");
-      console.log("Products page accessed");
+    case "/subscribe":
+      // Read the file
+      fs.readFile(filePath, (err, data) => {
+        if (err) {
+          // If file doesn't exist or there's an error reading it, send 404
+          response.writeHead(404, { "Content-Type": "text/plain" });
+          response.end("404 Not Found");
+          console.log("Page not found");
+        } else {
+          // If file is successfully read, send it as response
+          response.writeHead(200, { "Content-Type": "text/html" });
+          response.end(data);
+          console.log(`${url} page accessed`);
+        }
+      });
       break;
-    case "subscribe":
-      // Handle subscribe route
-      response.writeHead(200, { "Content-Type": "text/plain" });
-      response.end("Welcome to the subscribe page");
-      console.log("Subscribe page accessed");
+
+    default:
+      // If the URL is not found, send 404
+      response.writeHead(404, { "Content-Type": "text/plain" });
+      response.end("404 Not Found");
+      console.log("Page not found");
       break;
   }
 });
